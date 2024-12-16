@@ -250,21 +250,26 @@ const handleRegisterCard = async (memberId: string) => {
   }
 }
 
-const handleRecharge = async (params: { cardId: string; value: number }) => {
+const handleRecharge = async (params: { cardId: string; value: string }) => {
   try {
-    await cardsApi.recharge({
+    const result = await cardsApi.recharge({
       cardId: params.cardId,
-      value: params.value.toString(),
+      value: params.value
     })
+    
+    if (result.code === 200) {
+      notify({
+        message: '充值成功',
+        color: 'success',
+      })
+      showRechargeModal.value = false
+    } else {
+      throw new Error(result.message || '充值失败')
+    }
+  } catch (error: any) {
+    console.error('充值失败:', error)
     notify({
-      message: '充值成功',
-      color: 'success',
-    })
-    showRechargeModal.value = false
-    await cardsApi.fetch()
-  } catch (error) {
-    notify({
-      message: '充值失败',
+      message: error.message || '充值失败',
       color: 'danger',
     })
   }
@@ -381,7 +386,7 @@ const beforeModalClose = async (done: () => void) => {
   done()
 }
 
-// 定义会员卡组类型
+// 定义员卡组类型
 interface MemberCardGroup {
   memberId: string
   name: string

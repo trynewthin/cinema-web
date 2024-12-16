@@ -13,13 +13,14 @@ export const cardAPI = {
   loseCard: (params: { cardId: string }) => request.post<Result>('/loseCard', { params }),
 
   // 解挂会员卡
-  cancelCard: (params: { cardId: string }) => request.post<Result>('/cancelCard', { params }),
+  cancelLoseCard: (params: { cardId: string }) => request.post<Result>('/cancelLoseCard', { params }),
 
   // 补办会员卡
   reissueCard: (params: { cardId: string }) => request.post<Result>('/reissueCard', { params }),
 
   // 充值会员卡
-  rechargeCard: (params: { cardId: string; amount: number }) => request.post<Result>('/rechargeCard', { params }),
+  rechargeCard: (params: { cardId: string; value: number }) => 
+    request.get<Result>('/rechargeCard', { params }),
 
   // 消费
   consumeCard: (params: {

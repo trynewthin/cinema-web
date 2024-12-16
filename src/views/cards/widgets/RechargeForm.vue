@@ -25,7 +25,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', data: { cardId: string; value: number }): void
+  (e: 'submit', data: { cardId: string; value: string }): void
 }>()
 
 const formData = ref({
@@ -50,8 +50,8 @@ watch(
   { immediate: true },
 )
 
-const handleSubmit = () => {
-  const value = Number(formData.value.value)
+const handleSubmit = async () => {
+  const value = parseInt(formData.value.value)
   if (isNaN(value) || value <= 0) {
     notify({
       message: '请输入有效的充值金额',
@@ -59,9 +59,18 @@ const handleSubmit = () => {
     })
     return
   }
-  emit('submit', {
-    cardId: formData.value.cardId,
-    value: value,
-  })
+
+  try {
+    await emit('submit', {
+      cardId: formData.value.cardId,
+      value: value.toString()
+    })
+  } catch (error: any) {
+    console.error('充值提交失败:', error)
+    notify({
+      message: error.message || '充值失败',
+      color: 'danger',
+    })
+  }
 }
 </script>

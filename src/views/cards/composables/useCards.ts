@@ -127,7 +127,34 @@ export function useCards() {
   }
 
   const recharge = async (params: { cardId: string; value: string }) => {
-    await cardAPI.rechargeCard(params)
+    try {
+      if (!params.cardId || !params.value) {
+        throw new Error('无效的充值参数')
+      }
+
+      const value = parseInt(params.value, 10)
+      if (isNaN(value) || value <= 0) {
+        throw new Error('充值金额必须大于0')
+      }
+
+      const response = await cardAPI.rechargeCard({
+        cardId: params.cardId.trim(),
+        value: value
+      })
+
+      // 充值成功后立即更新本地数据
+      const result = await fetch()
+      
+      // 确保返回成功结果
+      return {
+        code: 200,
+        message: '充值成功',
+        data: result
+      }
+    } catch (error: any) {
+      console.error('充值失败:', error)
+      throw new Error(error.response?.data?.message || error.message || '充值失败')
+    }
   }
 
   const lose = async (cardId: string) => {

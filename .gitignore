@@ -5,3 +5,7 @@ yarn.lock
 .gitignore
 
 .idea/*
+
+.vscode/*
+
+docx/*
