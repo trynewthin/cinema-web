@@ -14,7 +14,8 @@ export const cardAPI = {
     request.post<Result>('/loseCard', null, { params }),
 
   // 解挂会员卡
-  cancelLoseCard: (params: { cardId: string }) => request.post<Result>('/cancelLoseCard', { params }),
+  cancelCard: (params: { cardId: string }) => 
+    request.post<Result>('/cancelCard', null, { params }),
 
   // 补办会员卡
   reissueCard: (params: { cardId: string }) => request.post<Result>('/reissueCard', { params }),

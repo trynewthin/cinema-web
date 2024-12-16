@@ -303,15 +303,16 @@ const handleLoseCard = async (card: Card) => {
 
 const handleCancelLose = async (card: Card) => {
   try {
-    const response = await cardsApi.cancelLose(card.cardId)
+    const result = await cardsApi.cancelLose(card.cardId)
+    
     notify({
       message: '解挂成功',
       color: 'success',
     })
-    await cardsApi.fetch()
-  } catch (error) {
+  } catch (error: any) {
+    console.error('解挂失败:', error)
     notify({
-      message: '解挂失败',
+      message: error.message || '解挂失败',
       color: 'danger',
     })
   }
@@ -347,7 +348,7 @@ const handleDeleteCard = async (card: Card) => {
     title: '注销确认',
     message: `确定要注销卡号为 ${card.cardId} 的会员卡吗？此操作不可恢复！`,
     okText: '注销',
-    cancelText: '��消',
+    cancelText: '取消',
     color: 'danger',
   })
 

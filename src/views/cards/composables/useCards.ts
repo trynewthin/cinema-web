@@ -178,14 +178,20 @@ export function useCards() {
 
   const cancelLose = async (cardId: string) => {
     try {
-      const response = await cardAPI.cancelLoseCard({ cardId })
-      if (response.status !== 200) {
-        throw new Error(response.msg || '解挂失败')
+      const response = await cardAPI.cancelCard({ cardId })
+      
+      // 先更新数据
+      await fetch()
+      
+      // 返回成功结果
+      return {
+        code: 200,
+        message: '解挂成功',
+        data: response.data
       }
-      await fetch() // 重新获取数据
-    } catch (error) {
+    } catch (error: any) {
       console.error('解挂失败:', error)
-      throw error
+      throw new Error('解挂失败')
     }
   }
 
