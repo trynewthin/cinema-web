@@ -84,13 +84,17 @@ const onMovieSaved = async (movie: Movie) => {
       await moviesApi.update({
         ...movie,
         movieId: movieToEdit.value.movieId,
+        time: movie.releaseDate
       })
       notify({
         message: `电影 ${movie.name} 已更新`,
         color: 'success',
       })
     } else {
-      await moviesApi.add(movie)
+      await moviesApi.add({
+        ...movie,
+        time: movie.releaseDate
+      })
       notify({
         message: `电影 ${movie.name} 已创建`,
         color: 'success',

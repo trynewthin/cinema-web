@@ -66,10 +66,10 @@ export const useMovies = () => {
     async add(movie: Movie) {
       isLoading.value = true
       try {
-        await movieAPI.addMovie({
+        await movieAPI.insertMovie({
           name: movie.name,
           price: Number(movie.price),
-          time: movie.releaseDate,
+          time: movie.time,
           integral: Number(movie.ticketsSold || 0),
         })
         await fetch()
@@ -82,10 +82,10 @@ export const useMovies = () => {
     async update(movie: Movie) {
       isLoading.value = true
       try {
-        await movieAPI.updateMovie({
+        await movieAPI.modifyMovie({
           movieId: movie.movieId,
           name: movie.name,
-          time: movie.releaseDate,
+          time: movie.time,
           price: Number(movie.price),
           integral: Number(movie.ticketsSold || 0),
         })

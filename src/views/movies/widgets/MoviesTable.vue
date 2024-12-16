@@ -79,7 +79,7 @@ const columns = defineVaDataTableColumns([
   { label: '电影名字', key: 'name', sortable: true, align: 'center' },
   { label: '票价', key: 'price', sortable: true, align: 'center' },
   { label: '售出票数', key: 'ticketsSold', sortable: true, align: 'center' },
-  { label: '上映时间', key: 'releaseDate', sortable: true, align: 'center' },
+  { label: '最后编辑时间', key: 'releaseDate', sortable: true, align: 'center' },
   { label: '操作', key: 'actions', align: 'center' },
 ])
 

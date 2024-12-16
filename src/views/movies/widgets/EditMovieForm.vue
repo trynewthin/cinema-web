@@ -4,43 +4,65 @@
     ref="edit-movie-form"
     class="flex-col justify-start items-start gap-4 inline-flex w-full"
   >
-    <VaInput v-model="newMovie.name" label="电影名字" class="w-full" :rules="[validators.required]" name="name" />
+    <!-- 电影名字 -->
+    <div class="form-field w-full">
+      <h3 class="field-label">电影名字</h3>
+      <VaInput 
+        v-model="newMovie.name" 
+        class="w-full" 
+        :rules="[validators.required]" 
+        name="name"
+        placeholder="请输入电影名字"
+      />
+    </div>
 
-    <VaInput
-      v-model="newMovie.price"
-      label="票价"
-      type="number"
-      class="w-full"
-      :rules="[validators.required]"
-      name="price"
-      placeholder="请输入票价"
-    />
+    <!-- 票价 -->
+    <div class="form-field w-full">
+      <h3 class="field-label">票价</h3>
+      <VaInput
+        v-model="newMovie.price"
+        type="number"
+        class="w-full"
+        :rules="[validators.required]"
+        name="price"
+        placeholder="请输入票价"
+      />
+    </div>
 
-    <VaInput
-      v-model="newMovie.ticketsSold"
-      label="售出票数"
-      type="number"
-      class="w-full"
-      :rules="[validators.required]"
-      name="ticketsSold"
-      placeholder="请输入售出票数"
-    />
+    <!-- 售出票数 -->
+    <div class="form-field w-full">
+      <h3 class="field-label">售出票数</h3>
+      <VaInput
+        v-model="newMovie.ticketsSold"
+        type="number"
+        class="w-full"
+        :rules="[validators.required]"
+        name="ticketsSold"
+        placeholder="请输入售出票数"
+      />
+    </div>
 
-    <VaDatePicker
-      v-model="formattedTime"
-      label="上映时间"
-      placeholder="请选择上映时间"
-      mode="dateTime"
-      format="yyyy-MM-dd HH:mm"
-      minute-step="{5}"
-      class="w-full"
-      :rules="[validators.required]"
-      name="time"
-      :min="new Date(minDate)"
-      :max="new Date(maxDate)"
-      @update:modelValue="handleTimeChange"
-    />
+    <!-- 最后编辑时间 -->
+    <div class="form-field w-full">
+      <h3 class="field-label">最后编辑时间</h3>
+      <VaInput
+        v-model="formattedDisplayTime"
+        class="w-full"
+        :rules="[validators.required]"
+        name="time"
+        placeholder="格式：YYYY-MM-DD HH:mm:ss"
+        @input="handleTimeInput"
+      >
+        <template #appendInner>
+          <VaIcon name="access_time" />
+        </template>
+      </VaInput>
+      <span class="time-hint text-xs text-gray-500">
+        请按格式输入时间，例如：2024-01-16 14:30:00
+      </span>
+    </div>
 
+    <!-- 按钮区域 -->
     <div class="flex gap-2 flex-col-reverse sm:flex-row sm:items-center w-full justify-end">
       <VaButton preset="secondary" color="secondary" @click="$emit('close')">取消</VaButton>
       <VaButton :disabled="!isValid" @click="onSave">{{ saveButtonLabel }}</VaButton>
@@ -65,17 +87,16 @@ const props = defineProps({
   },
 })
 
-// 添加日期范围限制
+// 修改日期范围限制
 const minDate = computed(() => {
   const date = new Date()
-  date.setFullYear(date.getFullYear() - 1)
+  date.setFullYear(date.getFullYear() - 5) // 可以选择过去5年的时间
   return date.toISOString().split('.')[0].slice(0, 16)
 })
 
 const maxDate = computed(() => {
   const date = new Date()
-  date.setFullYear(date.getFullYear() + 2)
-  return date.toISOString().split('.')[0].slice(0, 16)
+  return date.toISOString().split('.')[0].slice(0, 16) // 最大时间为当前时间
 })
 
 // 获取当前日期时间作为默认值
@@ -94,40 +115,50 @@ const defaultNewMovie: Movie = {
   name: '',
   price: 0,
   ticketsSold: 0,
-  time: '', // 初始化为空字符串
+  releaseDate: getCurrentDateTime()
 }
 
 const newMovie = ref<Movie>({ ...defaultNewMovie })
 
 // 修改时间处理函数
-const handleTimeChange = (value: Date | null) => {
-  if (!value || isNaN(value.getTime())) {
+const handleTimeInput = (value: string) => {
+  // 验证时间格式
+  const timeRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/
+  if (!timeRegex.test(value)) {
     return
   }
-  // 格式化日期时间
-  const year = value.getFullYear()
-  const month = String(value.getMonth() + 1).padStart(2, '0')
-  const day = String(value.getDate()).padStart(2, '0')
-  const hours = String(value.getHours()).padStart(2, '0')
-  const minutes = String(value.getMinutes()).padStart(2, '0')
-  // 直接使用用户选择的时间
-  const selectedTime = new Date(value)
-  newMovie.value.time = selectedTime.toISOString().split('.')[0].replace('T', ' ')
+
+  try {
+    const date = new Date(value)
+    if (isNaN(date.getTime())) {
+      return
+    }
+    newMovie.value.releaseDate = value
+  } catch (error) {
+    console.error('Invalid date format:', error)
+  }
 }
 
-// 修改格式化时间计算属性
-const formattedTime = computed({
+// 修改格式化显示时间的计算属性
+const formattedDisplayTime = computed({
   get: () => {
-    if (!newMovie.value.time) return null
+    if (!newMovie.value.releaseDate) return ''
     try {
-      return new Date(newMovie.value.time)
+      const date = new Date(newMovie.value.releaseDate)
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      const seconds = String(date.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     } catch {
-      return null
+      return ''
     }
   },
-  set: (value: Date) => {
-    handleTimeChange(value)
-  },
+  set: (value: string) => {
+    handleTimeInput(value)
+  }
 })
 
 const isFormHasUnsavedChanges = computed(() => {
@@ -142,13 +173,13 @@ watch(
     if (props.movie) {
       newMovie.value = {
         ...props.movie,
-        time: props.movie.time || getCurrentDateTime(),
+        releaseDate: props.movie.releaseDate || getCurrentDateTime()
       }
     } else {
       newMovie.value = { ...defaultNewMovie }
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 const form = useForm('edit-movie-form')
@@ -161,7 +192,7 @@ const onSave = () => {
       ...newMovie.value,
       price: Number(newMovie.value.price),
       ticketsSold: Number(newMovie.value.ticketsSold),
-      time: newMovie.value.time,
+      releaseDate: newMovie.value.releaseDate
     })
   }
 }
@@ -170,3 +201,38 @@ defineExpose({
   isFormHasUnsavedChanges,
 })
 </script>
+
+<style scoped>
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--va-text-primary);
+}
+
+.time-display-box {
+  background-color: var(--va-background-primary);
+  border: 1px solid var(--va-border);
+  border-radius: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+.time-display-box:hover {
+  border-color: var(--va-primary);
+}
+
+/* 移除 VaInput 的默认 label */
+:deep(.va-input__label) {
+  display: none;
+}
+
+.time-hint {
+  margin-top: 0.25rem;
+  color: var(--va-text-secondary);
+}
+</style>
