@@ -285,15 +285,16 @@ const handleLoseCard = async (card: Card) => {
 
   if (agreed) {
     try {
-      await cardsApi.lose(card.cardId)
+      const result = await cardsApi.lose(card.cardId)
+      
       notify({
         message: '会员卡已挂失',
         color: 'success',
       })
-      await cardsApi.fetch()
-    } catch (error) {
+    } catch (error: any) {
+      console.error('挂失失败:', error)
       notify({
-        message: '挂失失败',
+        message: error.message || '挂失失败',
         color: 'danger',
       })
     }
@@ -346,7 +347,7 @@ const handleDeleteCard = async (card: Card) => {
     title: '注销确认',
     message: `确定要注销卡号为 ${card.cardId} 的会员卡吗？此操作不可恢复！`,
     okText: '注销',
-    cancelText: '取消',
+    cancelText: '��消',
     color: 'danger',
   })
 
@@ -462,7 +463,7 @@ const handleRegisterForNoCards = async () => {
 
   if (membersToRegister.length === 0) {
     notify({
-      message: '没有需要注册的会员',
+      message: '没有要注册的会员',
       color: 'info',
     })
     return

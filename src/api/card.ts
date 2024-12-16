@@ -10,7 +10,8 @@ export const cardAPI = {
   registerCard: (params: { memberId: string }) => request.get<Result>('/registerCard', { params }),
 
   // 挂失会员卡
-  loseCard: (params: { cardId: string }) => request.post<Result>('/loseCard', { params }),
+  loseCard: (params: { cardId: string }) => 
+    request.post<Result>('/loseCard', null, { params }),
 
   // 解挂会员卡
   cancelLoseCard: (params: { cardId: string }) => request.post<Result>('/cancelLoseCard', { params }),

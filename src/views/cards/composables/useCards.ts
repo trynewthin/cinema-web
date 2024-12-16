@@ -158,7 +158,22 @@ export function useCards() {
   }
 
   const lose = async (cardId: string) => {
-    await cardAPI.loseCard({ cardId })
+    try {
+      const response = await cardAPI.loseCard({ cardId })
+      
+      // 先更新数据
+      await fetch()
+      
+      // 返回成功结果
+      return {
+        code: 200,
+        message: '挂失成功',
+        data: response.data
+      }
+    } catch (error: any) {
+      console.error('挂失失败:', error)
+      throw new Error('挂失失败')
+    }
   }
 
   const cancelLose = async (cardId: string) => {
