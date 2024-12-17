@@ -6,10 +6,19 @@ export type Movie = {
   price?: number
 }
 
-export type MovieRequest = {
-  movieId?: string
+export type MovieApiResponse = {
+  movieId: string
   name: string
-  integral?: number
-  time: string
-  price: number
+  integral?: number | string
+  time?: string
+  price?: number | string
+}
+
+export type PageResult<T> = {
+  code: number
+  message: string
+  data?: {
+    list: T[]
+    pageTotal: number
+  }
 }

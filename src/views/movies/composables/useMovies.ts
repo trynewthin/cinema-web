@@ -1,58 +1,64 @@
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { movieAPI } from '../../../api'
-import type { Movie } from '../types'
+import type { Movie, MovieApiResponse, PageResult } from '../types'
 
 export const useMovies = () => {
   const isLoading = ref(false)
-  const movies = ref<Movie[]>([])
+  const allMovies = ref<Movie[]>([])
   const filters = ref({ name: '' })
   const pagination = ref({ page: 1, perPage: 10, total: 0 })
+
+  const movies = computed(() => {
+    let filtered = [...allMovies.value]
+    
+    if (filters.value.name) {
+      const searchTerm = filters.value.name.toLowerCase()
+      filtered = filtered.filter(movie => 
+        movie.name.toLowerCase().includes(searchTerm)
+      )
+    }
+
+    pagination.value.total = filtered.length
+
+    const start = (pagination.value.page - 1) * pagination.value.perPage
+    const end = start + pagination.value.perPage
+    
+    return filtered.slice(start, end)
+  })
 
   const fetch = async () => {
     isLoading.value = true
     try {
       const result = await movieAPI.getMovieList({
-        pageIndex: pagination.value.page,
-        pageSize: pagination.value.perPage,
-        name: filters.value.name || undefined,
+        pageIndex: 1,
+        pageSize: 1000,
       })
 
-      if (result.status === 200 && result.data) {
-        const pageSize = pagination.value.perPage
-        movies.value = (result.data.list || [])
-          .map((item) => ({
+      if (result.data) {
+        allMovies.value = (result.data.list || [])
+          .map((item: MovieApiResponse) => ({
             movieId: item.movieId,
             name: item.name,
             ticketsSold: Number(item.integral || 0),
             releaseDate: item.time || '',
             price: Number(item.price || 29.9),
           }))
-          .slice(0, pageSize)
-
-        pagination.value.total = result.data.pageTotal || 0
-
-        const maxPage = Math.ceil(pagination.value.total / pageSize)
-        if (maxPage > 0 && pagination.value.page > maxPage) {
-          pagination.value.page = maxPage
-        }
       } else {
-        movies.value = []
-        pagination.value.total = 0
+        allMovies.value = []
         console.error('API request failed:', result)
       }
     } catch (error) {
       console.error('Failed to fetch movies:', error)
-      movies.value = []
-      pagination.value.total = 0
+      allMovies.value = []
     } finally {
       isLoading.value = false
     }
   }
 
-  // 监听过滤器和分页变化
-  watch([pagination, filters], fetch, { deep: true })
+  watch(filters, () => {
+    pagination.value.page = 1
+  }, { deep: true })
 
-  // 初始加载
   fetch()
 
   return {
@@ -62,14 +68,13 @@ export const useMovies = () => {
     movies,
     fetch,
 
-    // 添加电影
     async add(movie: Movie) {
       isLoading.value = true
       try {
         await movieAPI.insertMovie({
           name: movie.name,
           price: Number(movie.price),
-          time: movie.time,
+          time: movie.releaseDate,
           integral: Number(movie.ticketsSold || 0),
         })
         await fetch()
@@ -78,14 +83,13 @@ export const useMovies = () => {
       }
     },
 
-    // 更新电影
     async update(movie: Movie) {
       isLoading.value = true
       try {
         await movieAPI.modifyMovie({
           movieId: movie.movieId,
           name: movie.name,
-          time: movie.time,
+          time: movie.releaseDate,
           price: Number(movie.price),
           integral: Number(movie.ticketsSold || 0),
         })
@@ -95,7 +99,6 @@ export const useMovies = () => {
       }
     },
 
-    // 删除电影
     async remove(movie: Movie) {
       isLoading.value = true
       try {
